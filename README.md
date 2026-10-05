@@ -1,5 +1,7 @@
 # ReleaseOps
 
+[![CI](https://github.com/pasinduw97/devops-delivery-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/pasinduw97/devops-delivery-lab/actions/workflows/ci.yml)
+
 A reproducible release verification service with Python, Docker, GitHub Actions,
 Terraform and an optional AWS Lambda deployment in London (`eu-west-2`).
 
@@ -8,7 +10,8 @@ commit. The repository includes the application, automated checks, infrastructur
 configuration and the operational steps needed to investigate a failed release.
 
 The [verification record](docs/verification.md) lists completed checks and their
-scope. The application and Terraform configuration have been validated locally.
+scope. Hosted CI passes the tests, Terraform validation, container build and
+release smoke check. The application and configuration also pass local checks.
 AWS deployment remains an optional step and has not been performed.
 
 ## Run locally at no cloud cost
@@ -83,8 +86,7 @@ deploy AWS resources. Deployment requires separate account and spending approval
 
 ## Further work
 
-- Link the first successful CI run and record its commit SHA.
-- Explain a deliberately failed smoke test and the fix.
+- Reproduce the startup failure and explain the regression tests in the verification record.
 - Capture your own Terraform plan, deployment logs and teardown evidence after an authorised AWS exercise.
 - Extend the API and tests together, then verify the release identifier after deployment.
 - Review the design questions in [interview walkthrough](docs/interview-walkthrough.md).
