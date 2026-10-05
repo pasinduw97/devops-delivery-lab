@@ -1,0 +1,56 @@
+name: Deploy to AWS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: releaseops-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_VAR_app_version: ${{ github.sha }}
+      TF_VAR_aws_region: eu-west-2
+      TF_VAR_alarm_topic_arn: ${{ vars.ALARM_TOPIC_ARN }}
+      STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Require deployment configuration
+        run: |
+          test -n "$STATE_BUCKET" || { echo 'Set TF_STATE_BUCKET first'; exit 1; }
+          test -n "$AWS_ROLE_ARN" || { echo 'Set AWS_ROLE_ARN first'; exit 1; }
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.13'
+      - run: python -m unittest discover -s tests -v
+      - run: python scripts/package_lambda.py
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: '1.14.6'
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: eu-west-2
+          role-session-name: releaseops-deploy
+      - name: Initialise locked remote state
+        run: terraform -chdir=infra init -input=false -backend-config="bucket=$STATE_BUCKET" -backend-config="key=releaseops/production.tfstate" -backend-config="region=eu-west-2" -backend-config="encrypt=true" -backend-config="use_lockfile=true"
+      - name: Validate and plan
+        run: |
+          terraform -chdir=infra fmt -check
+          terraform -chdir=infra validate
+          terraform -chdir=infra plan -input=false -out=deployment.tfplan
+      - name: Apply saved plan
+        run: terraform -chdir=infra apply -input=false deployment.tfplan
+      - name: Verify deployed commit
+        run: python scripts/smoke.py "$(terraform -chdir=infra output -raw api_url)" --expected-version "$TF_VAR_app_version"
