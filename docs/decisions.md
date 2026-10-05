@@ -31,5 +31,6 @@ multi-region failover, private networking, image registry or Kubernetes cluster.
 
 There are no pip dependencies. Provider versions are constrained and the generated
 Terraform lockfile is committed. Action and base image updates are reviewed via
-Dependabot. Actions use verified commit SHAs; the base image should be pinned to
-a reviewed digest when moving beyond a portfolio lab.
+Dependabot. Actions use verified commit SHAs and the base image uses the official
+digest resolved by the hosted build. Pinning controls changes; updates still need
+review and verification.
