@@ -45,7 +45,7 @@ docker run --rm --read-only --cap-drop=ALL --security-opt=no-new-privileges --pi
 ```
 
 The image runs as UID 10001 and includes a health check. The local
-HTTP service based on Python's standard server, bound to localhost by default.
+HTTP service uses Python's standard server and binds to localhost by default.
 The AWS path uses Lambda instead of that HTTP server.
 
 ## Delivery pipeline
@@ -58,8 +58,8 @@ The manual AWS workflow runs only from main and uses short-lived OIDC credential
 The deployment uses saved Terraform plans, encrypted remote state with S3 locking,
 and a smoke test that checks both health and the exact deployed commit identifier.
 Dependabot proposes Action, Docker and provider updates. Actions are pinned to
-verified commit SHAs. The Docker base image still uses a mutable minor tag; pin
-a reviewed image digest before using this pattern in a production repository.
+verified commit SHAs. The Docker base image is pinned to the official image digest
+resolved by the hosted build, so repeated builds use the same base image.
 
 ## Architecture
 
