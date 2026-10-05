@@ -12,7 +12,7 @@ Verified locally on Windows on 5 October 2026.
 | Terraform configuration validation | Passed with Terraform 1.14.6 and AWS provider 6.67.0 |
 | Provider checksums | Lockfile includes linux_amd64 and windows_amd64 |
 | Docker local build | Not run locally; Docker is not installed in the preparation environment |
-| GitHub-hosted CI | Startup retry fix awaiting hosted verification |
+| GitHub-hosted CI | Passed tests, packaging, Terraform validation, Docker build and release smoke check |
 | AWS plan, apply and cloud smoke | Not run; no AWS resources deployed |
 
 Lambda ZIP SHA256:
@@ -20,6 +20,15 @@ Lambda ZIP SHA256:
 ```text
 4965737919942750cf0681de82dd85fd941c79740b0c8abf72e23d217b3f7722
 ```
+
+## Hosted build evidence
+
+[Successful run on 5 October 2026](https://github.com/pasinduw97/devops-delivery-lab/actions/runs/37376713982)
+verified commit `262ea5ecea23484b8eaf605596531148ac27d4a4` on an Ubuntu runner with
+Python 3.13. The run passed all 26 tests, Terraform formatting and configuration
+validation, the pinned Docker image build and a smoke check against the exact
+commit identifier. This is container verification on the runner, not AWS runtime
+verification.
 
 The local checks validate application behaviour and configuration syntax. They
 do not establish AWS permissions, account quotas, runtime integration, operating
